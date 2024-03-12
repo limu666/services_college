@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.limu.content.mapper.ContentMapper">
+    <resultMap id="ContentResultMap" type="com.limu.model.content.pojos.Content">
+        <id property="contentId" column="content_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="type" column="type"/>
+        <result property="fileCount" column="file_count"/>
+        <result property="loveCount" column="love_count"/>
+        <result property="isAnonymous" column="is_anonymous"/>
+        <result property="remark" column="remark"/>
+        <result property="deleted" column="deleted"/>
+        <result property="createTime" column="create_time"/>
+        <result property="createUser" column="create_user"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updateUser" column="update_user"/>
+        <!-- 其他属性的映射 -->
+    </resultMap>
+
+    <resultMap id="ContentZCategoryResult" type="com.limu.model.content.pojos.Content" extends="ContentResultMap">
+        <collection property="categoryList" notNullColumn="sub_category_id" javaType="java.util.List" resultMap="CategoryResult" />
+    </resultMap>
+
+    <resultMap type="com.limu.model.content.pojos.Category" id="CategoryResult">
+        <result property="categoryId"    column="sub_category_id"    />
+        <result property="categoryName"    column="sub_category_name"    />
+        <result property="parentId"    column="sub_parent_id"    />
+        <result property="orderNum"    column="sub_order_num"    />
+        <result property="slug"    column="sub_slug"    />
+        <result property="description"    column="sub_description"    />
+        <result property="type"    column="sub_type"    />
+        <result property="icon"    column="sub_icon"    />
+        <result property="status"    column="sub_status"    />
+        <result property="deleted"    column="sub_deleted"    />
+        <result property="createTime"    column="sub_create_time"    />
+        <result property="createUser"    column="sub_create_user"    />
+        <result property="updateTime"    column="sub_update_time"    />
+        <result property="updateUser"    column="sub_update_user"    />
+    </resultMap>
+
+    <select id="getAllList" resultMap="ContentResultMap">
+        SELECT * FROM z_content
+        <where>
+        <if test="contentId != null "> and content_id = #{contentId}</if>
+        </where>
+    </select>
+
+    <!--  获取满足条件内容  -->
+    <select id="selectContentList" resultMap="ContentResultMap">
+        select  SQL_CALC_FOUND_ROWS * from z_content
+        <where>
+            <if test="contentId != null "> and content_id = #{contentId}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="categoryId != null "> and category_id = #{categoryId}</if>
+            <if test="content != null  and content != ''"> and content like concat('%', #{content}, '%')</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="fileCount != null "> and file_count = #{fileCount}</if>
+            <if test="loveCount != null "> and love_count = #{loveCount}</if>
+            <if test="isAnonymous != null "> and is_anonymous = #{isAnonymous}</if>
+            <if test="createUser != null "> and create_user = #{createUser}</if>
+            <if test="updateUser != null "> and update_user = #{updateUser}</if>
+            <if test="deleted == null or deleted != 1"> and deleted != 1</if>
+        </where>
+        <!-- 对页数进行限制 -->
+        <choose>
+            <when test="pageNo != null and pageSize != null">
+                <bind name="start" value="(pageNo - 1) * pageSize"/>
+                limit #{start}, #{pageSize}
+            </when>
+        </choose>
+#         ORDER BY z_content.update_time desc
+    </select>
+
+    <select id="selectContentByContentId" parameterType="Long" resultMap="ContentZCategoryResult">
+        select a.content_id, a.user_id, a.category_id, a.content, a.status, a.type, a.file_count, a.love_count, a.is_anonymous, a.remark, a.deleted, a.create_time, a.create_user, a.update_time, a.update_user,
+               b.category_id as sub_category_id, b.category_name as sub_category_name, b.parent_id as sub_parent_id, b.order_num as sub_order_num, b.slug as sub_slug, b.description as sub_description, b.type as sub_type, b.icon as sub_icon, b.status as sub_status, b.deleted as sub_deleted, b.create_time as sub_create_time, b.create_user as sub_create_user, b.update_time as sub_update_time, b.update_user as sub_update_user
+        from z_content a
+                 left join z_category b on b.category_id = a.content_id
+        where a.content_id = #{contentId}
+    </select>
+
+<!--    根据id更新内容信息-->
+    <update id="updateContent" parameterType="com.limu.model.content.pojos.Content">
+        UPDATE z_content
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="fileCount != null">file_count = #{fileCount},</if>
+            <if test="loveCount != null">love_count = #{loveCount},</if>
+            <if test="isAnonymous != null">is_anonymous = #{isAnonymous},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="deleted != null">deleted = #{deleted},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createUser != null">create_user = #{createUser},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateUser != null">update_user = #{updateUser},</if>
+        </trim>
+        where content_id = #{contentId}
+    </update>
+
+    <select id="getCount" resultType="int">
+        SELECT FOUND_ROWS() as total
+    </select>
+
+    <delete id="delContentById" parameterType="Long">
+        delete from z_content where content_id = #{contentId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.limu.content.mapper.CategoryMapper">
+
+    <resultMap type="com.limu.model.content.pojos.Category" id="CategoryResult">
+        <result property="categoryId"    column="category_id"    />
+        <result property="categoryName"    column="category_name"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="orderNum"    column="order_num"    />
+        <result property="slug"    column="slug"    />
+        <result property="description"    column="description"    />
+        <result property="type"    column="type"    />
+        <result property="icon"    column="icon"    />
+        <result property="status"    column="status"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createUser"    column="create_user"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateUser"    column="update_user"    />
+    </resultMap>
+
+<!--    <resultMap id="CategoryContentResult" type="com.limu.model.content.pojos.Category" extends="CategoryResult">
+        <collection property="contentList" notNullColumn="sub_content_id" javaType="java.util.List" resultMap="ContentResultMap" />
+    </resultMap>
+    <resultMap id="ContentResultMap" type="com.limu.model.content.pojos.Content">
+        <id property="contentId" column="sub_content_id"/>
+        <result property="userId" column="sub_user_id"/>
+        <result property="categoryId" column="sub_category_id"/>
+        <result property="content" column="sub_content"/>
+        <result property="status" column="sub_status"/>
+        <result property="type" column="sub_type"/>
+        <result property="fileCount" column="sub_file_count"/>
+        <result property="loveCount" column="sub_love_count"/>
+        <result property="isAnonymous" column="sub_is_anonymous"/>
+        <result property="remark" column="sub_remark"/>
+        <result property="deleted" column="sub_deleted"/>
+        <result property="createTime" column="sub_create_time"/>
+        <result property="createUser" column="sub_create_user"/>
+        <result property="updateTime" column="sub_update_time"/>
+        <result property="updateUser" column="sub_update_user"/>
+        &lt;!&ndash; 其他属性的映射 &ndash;&gt;
+    </resultMap>-->
+
+    <select id="selectCategoryList" parameterType="com.limu.model.content.pojos.Category" resultMap="CategoryResult">
+        select SQL_CALC_FOUND_ROWS * from z_category
+        <where>
+            <if test="categoryId != null "> and category_id = #{categoryId}</if>
+            <if test="categoryName != null  and categoryName != ''"> and category_name = #{categoryName}</if>
+            <if test="slug != null  and slug != ''"> and slug = #{slug}</if>
+            <if test="description != null  and description != ''"> and description like concat('%', #{description}, '%')</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="createTime != null "> and create_time = #{createTime}</if>
+            <if test="createUser != null "> and create_user like concat('%', #{createUser}, '%')</if>
+            <if test="updateTime != null "> and update_time = #{updateTime}</if>
+            <if test="updateUser != null "> and update_user like concat('%', #{updateUser}, '%')</if>
+            <if test="deleted == null or deleted != 1"> and deleted != 1</if>
+        </where>
+        <!-- 对页数进行限制 -->
+        <choose>
+            <when test="pageNo != null and pageSize != null">
+                <bind name="start" value="(pageNo - 1) * pageSize"/>
+                limit #{start}, #{pageSize}
+            </when>
+        </choose>
+    </select>
+
+    <select id="selectCategoryByCategoryId" parameterType="Long" resultMap="CategoryResult">
+        select a.category_id, a.category_name, a.parent_id, a.order_num, a.slug, a.description, a.type, a.icon, a.status, a.deleted, a.create_time, a.create_user, a.update_time, a.update_user
+        from z_category a
+        where a.category_id = #{categoryId}
+    </select>
+
+    <select id="getCount" resultType="int">
+        SELECT FOUND_ROWS() as total
+    </select>
+
+    <insert id="insertCategory" parameterType="com.limu.model.content.pojos.Category">
+        insert into z_category
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="categoryId != null">category_id,</if>
+            <if test="categoryName != null and categoryName != ''">category_name,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="orderNum != null">order_num,</if>
+            <if test="slug != null and slug != ''">slug,</if>
+            <if test="description != null">description,</if>
+            <if test="type != null">type,</if>
+            <if test="icon != null">icon,</if>
+            <if test="status != null">status,</if>
+            <if test="deleted != null">deleted,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createUser != null">create_user,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateUser != null">update_user,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="categoryId != null">#{categoryId},</if>
+            <if test="categoryName != null and categoryName != ''">#{categoryName},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="orderNum != null">#{orderNum},</if>
+            <if test="slug != null and slug != ''">#{slug},</if>
+            <if test="description != null">#{description},</if>
+            <if test="type != null">#{type},</if>
+            <if test="icon != null">#{icon},</if>
+            <if test="status != null">#{status},</if>
+            <if test="deleted != null">#{deleted},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createUser != null">#{createUser},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateUser != null">#{updateUser},</if>
+        </trim>
+    </insert>
+    <update id="updateCategory" parameterType="com.limu.model.content.pojos.Category">
+        update z_category
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="categoryName != null and categoryName != ''">category_name = #{categoryName},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="orderNum != null">order_num = #{orderNum},</if>
+            <if test="slug != null and slug != ''">slug = #{slug},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="icon != null">icon = #{icon},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="deleted != null">deleted = #{deleted},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createUser != null">create_user = #{createUser},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateUser != null">update_user = #{updateUser},</if>
+        </trim>
+        where category_id = #{categoryId}
+    </update>
+
+    <update id="delCategoryById" parameterType="Long">
+        UPDATE z_category
+        SET deleted = true
+        WHERE category_id = #{categoryId}
+    </update>
+
+</mapper>

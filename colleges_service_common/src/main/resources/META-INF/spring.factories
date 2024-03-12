@@ -1,0 +1,8 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.limu.exception.ExceptionCatch,\
+  com.limu.swagger.SwaggerConfiguration,\
+  com.limu.config.RedisConfig,\
+  com.limu.config.MybatisPlusConfig
+
+# ,\
+# com.limu.swagger.Swagger2Configuration

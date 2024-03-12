@@ -1,0 +1,31 @@
+server:
+  port: 10001
+spring:
+  application:
+    name: colleges-user
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.22.135:8848
+        enabled: true
+      config:
+        server-addr: 192.168.22.135:8848
+        file-extension: yaml
+        # 因为springboot 2.4版本以后默认关闭加载bootstrap.yml，所以只能通过此方式连接到nacos config
+        import: nacos:${spring.application.name}.${spring.cloud.nacos.config.file-extension}
+        enabled: true
+  redis:
+    host: 192.168.22.135
+    port: 6379
+    client-type: jedis
+upload:
+  file:
+    location: D:/桌面文件/存放/练习项目/main/one/colleges_service/colleges_service_service/colleges_service_user/src/main/resources/static/upload/hdpic/
+
