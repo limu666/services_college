@@ -52,6 +52,13 @@ public class UserLoginController {
         return userService.login(dto);
     }
 
+    @PostMapping("/login_authApp")
+    @ApiOperation(value = "App登录")
+    public ResponseResult<?> loginApp(@RequestBody LoginDto dto){
+
+        return userService.loginApp(dto);
+    }
+
     @ApiOperation(value = "获取用户信息")
     @GetMapping("/info")
     public ResponseResult<?> getUserInfo(@RequestParam("token") String token){

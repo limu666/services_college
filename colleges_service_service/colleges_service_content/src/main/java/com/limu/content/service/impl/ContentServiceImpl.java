@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.limu.apis.user.IUserClient;
 import com.limu.file.ExportCsv;
 import com.limu.model.common.dtos.ResponseResult;
 import com.limu.model.content.pojos.Category;
@@ -40,15 +41,21 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
     @Resource
     private ContentMapper contentMapper;
 
+    @Resource
+    private IUserClient userClient;
+
     @Override
     public ResponseResult<?> getContentList(Content content) {
+
+//        ResponseResult<?> user = userClient.getUserById(8);
+//        System.out.println(user.getData());
+
         if(content.getPageNo() == content.getPageSize() || content.getPageNo() > 50 || content.getPageSize() > 50){
             return ResponseResult.errorResult(20001, "访问页数过大，请重新选择");
         }
         // 查询满足条件的内容列表
         List<Content> contentList = contentMapper.selectContentList(content);
         int count = contentMapper.getCount();
-
 
         // 获取分页数据、总记录数并封装到结果中
         Map<String, Object> data = new HashMap<>();
@@ -115,6 +122,7 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         List<Content> contentList = this.baseMapper.selectList(wrapper);
 
         String fileName = ExportCsv.exportCsv(contentList);
+        if (fileName != null && fileName.isEmpty()) return ResponseResult.errorResult(20001, "导出失败");
 
         return ResponseResult.okResult("导出成功！！！目录地址为：" + fileName);
     }

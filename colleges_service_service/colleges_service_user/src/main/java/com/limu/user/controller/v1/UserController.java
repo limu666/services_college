@@ -1,5 +1,6 @@
 package com.limu.user.controller.v1;
 
+import com.limu.apis.user.IUserClient;
 import com.limu.model.common.dtos.ResponseResult;
 import com.limu.model.common.enums.AppHttpCodeEnum;
 import com.limu.model.user.pojos.User;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.HtmlUtils;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -36,16 +38,20 @@ import java.util.UUID;
 @RequestMapping("/api/v1/manage/user")
 public class UserController {
 
-    @Autowired
+    @Resource
     private UserService userService;
 
-    @Autowired
+    @Resource
     private PasswordEncoder passwordEncoder; // 注入密码编码器
+
+    @Resource
+    private IUserClient userClient;
 
     @ApiOperation(value = "测试类", tags = {"测试"})
     @GetMapping("/test")
     public void test(){
-        log.info("居然失败了。。。。。。");
+        ResponseResult<?> user = userClient.getUserById(8);
+        log.info("居然失败了。。。。。。" + user.getData());
     }
 
     /*
@@ -108,6 +114,10 @@ public class UserController {
                 //验证用户输入是否为空
                 return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
             }
+            if(user.getPassword() == null){
+                //验证用户输入是否为空
+                return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+            }
             // 对用户输入进行过滤和转义，防止跨站点脚本攻击
             user.setName(HtmlUtils.htmlEscape(user.getName()));
 
@@ -139,14 +149,6 @@ public class UserController {
         userService.updateUser(user);
 
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-    }
-
-    @ApiOperation(value = "通过id获取用户信息")
-    @GetMapping("/getUserById/{id}")
-    public ResponseResult<User> getUserById(@PathVariable("id") Integer id){
-
-
-        return userService.getUserById(id);
     }
 
     @ApiOperation(value = "删除用户信息（逻辑删除）")

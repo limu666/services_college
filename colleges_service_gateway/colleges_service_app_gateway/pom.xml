@@ -18,6 +18,18 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
-
+    <dependencies>
+        <!--nacos注册和配置中心-->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+            <version>2.2.3.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+            <version>2.2.6.RELEASE</version>
+        </dependency>
+    </dependencies>
 
 </project>

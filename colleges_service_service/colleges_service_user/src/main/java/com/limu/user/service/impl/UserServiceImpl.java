@@ -5,9 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.limu.file.ExcelUtils;
 import com.limu.file.ExportCsv;
-import com.limu.file.MyCsvFileUtil;
 import com.limu.model.common.dtos.ResponseResult;
 import com.limu.model.common.enums.AppHttpCodeEnum;
 import com.limu.model.user.dtos.LoginDto;
@@ -34,7 +32,6 @@ import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -74,19 +71,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public ResponseResult<?> login(LoginDto dto) {
         //进行验证码验证
-        String verifyCode = redis.opsForValue().get("verifyCode");
-
-        if("".equals(dto.getVerifyCode()) || null == dto.getVerifyCode()){
-            return ResponseResult.errorResult(20004,"验证码有误，请刷新重新输入");
-        }
-        if("".equals(verifyCode) || null == verifyCode){
-            return ResponseResult.errorResult(20004,"验证码有误，请刷新重新输入");
-        }
-        if(!verifyCode.equals(dto.getVerifyCode())){
-            return ResponseResult.errorResult(20004,"验证码有误，请刷新重新输入");
-        }
-
-        redisTemplate.delete("verifyCode");
+        if (verifyCode(dto)) return ResponseResult.errorResult(20004, "验证码有误，请刷新重新输入");
 
         //1.根据手机号和密码
         if(StringUtils.isNotBlank(dto.getPhone())&& StringUtils.isNotBlank(dto.getPassword())){
@@ -115,6 +100,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             if(!pwd.equals(dbUser.getPassword())){
                 return ResponseResult.errorResult(AppHttpCodeEnum.LOGIN_PASSWORD_ERROR);
             }*/
+            // 通过手机号查询用户
+            User user = getOne(Wrappers.<User>lambdaQuery().eq(User::getPhone, dto.getPhone()));
+            ResponseResult<User> userById = getUserById(user.getId());
+            List<Integer> roleIdList = userById.getData().getRoleIdList();
+            if(roleIdList.size() < 2){
+                return ResponseResult.errorResult(20001,"您没有访问权限！！！");
+            }
             //1.3 返回数据 jwt user
             String token = AppJwtUtil.getToken(dbUser.getId().longValue());
             //redisTemplate.opsForValue().set(key, dbUser, 30, TimeUnit.MINUTES);
@@ -126,6 +118,68 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             dbUser.setSalt("");
             map.put("user", dbUser);
             map.put("token", token);
+
+            return ResponseResult.okResult(map);
+
+        }
+        /*else{
+            //2.游客登录
+            Map<String, Object> map = new HashMap<>();
+            map.put("token", AppJwtUtil.getToken(0L));
+            return ResponseResult.okResult(map);
+        }*/
+
+        return ResponseResult.errorResult(AppHttpCodeEnum.NO_OPERATOR_AUTH);
+    }
+
+    private boolean verifyCode(LoginDto dto) {
+        String verifyCode = redis.opsForValue().get("verifyCode");
+
+        if("".equals(dto.getVerifyCode()) || null == dto.getVerifyCode()){
+            return true;
+        }
+        if("".equals(verifyCode) || null == verifyCode){
+            return true;
+        }
+        if(!verifyCode.equals(dto.getVerifyCode())){
+            return true;
+        }
+
+        redisTemplate.delete("verifyCode");
+        return false;
+    }
+
+
+    @Override
+    public ResponseResult<?> loginApp(LoginDto dto) {
+        //进行验证码验证
+        if (verifyCode(dto)) return ResponseResult.errorResult(20004, "验证码有误，请刷新重新输入");
+
+        //1.根据手机号和密码
+        if(StringUtils.isNotBlank(dto.getPhone())&& StringUtils.isNotBlank(dto.getPassword())){
+
+            //1.1根据手机号查询用户信息
+            User dbUser = getOne(Wrappers.<User>lambdaQuery().eq(User::getPhone, dto.getPhone()));
+            if(dbUser == null){
+                return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST, "用户信息不存在");
+            }
+//            System.out.println("2024年1月11日12:24:41");
+            //1.2比对密码
+            // 用户输入的用户名和密码
+            String inputPassword = dto.getPassword();
+            // 数据库中的salt和password
+            String dbSalt = dbUser.getSalt();
+            String dbPassword = dbUser.getPassword();
+            // 从数据库中获取存储的salt，并将用户输入的密码与存储的salt进行验证
+            if (!verifyPassword(inputPassword, dbPassword, dbSalt)) {
+                return ResponseResult.errorResult(AppHttpCodeEnum.LOGIN_PASSWORD_ERROR);
+            }
+
+            Map<String, Object> map = new HashMap<>();
+            dbUser.setPassword("");
+            dbUser.setSalt("");
+            map.put("user", dbUser);
+//            map.put("token", token);
 
             return ResponseResult.okResult(map);
 
@@ -192,8 +246,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     //获取用户信息
     @Override
     public ResponseResult<?> getAllUsers() {
-
-
 
         return null;
     }
@@ -310,6 +362,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         wrapper.eq(UserRole::getUserId, id);
         List<UserRole> userRoleList = userRoleMapper.selectList(wrapper);
 
+        // 获取角色列表
         List<Integer> roleIdList = userRoleList.stream()
                                         .map(userRole -> {return userRole.getRoleId();})
                                         .collect(Collectors.toList());

@@ -1,5 +1,7 @@
 package com.limu.content.controller.v1;
 
+import com.limu.apis.user.IUserClient;
+import com.limu.content.feign.UserFeign;
 import com.limu.content.service.IContentService;
 import com.limu.model.common.dtos.ResponseResult;
 import com.limu.model.common.enums.AppHttpCodeEnum;
@@ -34,9 +36,13 @@ public class ContentController {
     @Resource
     private IContentService contentService;
 
+    @Resource
+    private IUserClient userClient;
+
     @ApiOperation(value = "测试类", tags = {"测试"})
     @GetMapping("/test")
     public void test(){
+//        ResponseResult user = userClient.getUserById(8);
         log.info("居然失败了。。。。。。");
     }
 

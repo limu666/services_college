@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: colleges-user
+  profiles:
+    active: dev # 开发环境
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -25,6 +27,15 @@ spring:
     host: 192.168.22.135
     port: 6379
     client-type: jedis
+feign:
+  client:
+    config:
+      default: # default全局的配置
+        loggerLevel: BASIC # 日志级别，BASIC就是基本的请求和响应信息
+  httpclient:
+    enabled: true # 开启feign对HttpClient的支持
+    max-connections: 200 # 最大的连接数
+    max-connections-per-route: 50 # 每个路径的最大连接数
 upload:
   file:
     location: D:/桌面文件/存放/练习项目/main/one/colleges_service/colleges_service_service/colleges_service_user/src/main/resources/static/upload/hdpic/

@@ -24,6 +24,8 @@ public interface UserService extends IService<User> {
     public ResponseResult<?> login(LoginDto dto);
 
 
+    ResponseResult<?> loginApp(LoginDto dto);
+
     public ResponseResult<?> getUserInfo(String token);
 
     public ResponseResult<?> logout(String token);

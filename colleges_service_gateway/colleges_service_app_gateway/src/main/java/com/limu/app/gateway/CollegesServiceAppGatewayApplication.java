@@ -13,4 +13,5 @@ public class CollegesServiceAppGatewayApplication {
         SpringApplication.run(CollegesServiceAppGatewayApplication.class, args);
     }
 
+
 }

@@ -1,5 +1,6 @@
 package com.limu.file;
 
+import com.limu.model.common.dtos.ResponseResult;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -70,18 +71,18 @@ public class MyCsvFileUtil {
     /**
      * 构建文件名称
      * @param dataList
-     * @return
+     * @return String
      */
-    public static String buildCsvFileFileName(List dataList) {
+    public static String buildCsvFileFileName(List<?> dataList) {
         return dataList.get(0).getClass().getSimpleName() + new SimpleDateFormat(DATE_STR_FILE_NAME).format(new Date()) + FILE_SUFFIX;
     }
 
     /**
      * 构建excel 标题行名
-     * @param dataList
-     * @return
+     * @param dataList<?>
+     * @return String
      */
-    public static String buildCsvFileTableNames(List dataList) {
+    public static String buildCsvFileTableNames(List<?> dataList) {
         Map<String, Object> map = toMap(dataList.get(0));
         StringBuilder tableNames = new StringBuilder();
         for (String key : map.keySet()) {

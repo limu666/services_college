@@ -5,7 +5,10 @@ import java.util.List;
 
 public class ExportCsv {
 
-    public static String exportCsv(List dataList){
+    public static String exportCsv(List<?> dataList){
+        if(dataList.isEmpty()){
+            return null;
+        }
         //存放地址&文件名
         String fileName = "D:\\Java学习\\colleges_export\\"+ MyCsvFileUtil.buildCsvFileFileName(dataList);
         //创建表格行标题

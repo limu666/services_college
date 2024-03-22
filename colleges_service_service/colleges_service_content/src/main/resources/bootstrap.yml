@@ -25,6 +25,14 @@ spring:
     host: 192.168.22.135
     port: 6379
     client-type: jedis
+#feign:
+#  client:
+#    config:
+#      colleges-user: # 针对某个微服务的配置
+#        loggerLevel: FULL #  日志级别
+#      colleges-content:
+#        loggerLevel: FULL
+
 #upload:
 #  file:
 #    location: D:/桌面文件/存放/练习项目/main/one/colleges_service/colleges_service_service/colleges_service_user/src/main/resources/static/upload/hdpic/

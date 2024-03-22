@@ -1,6 +1,7 @@
 package com.limu.app.gateway.filter;
 
-import com.alibaba.cloud.commons.lang.StringUtils;
+
+import com.alibaba.nacos.common.utils.StringUtils;
 import com.limu.app.gateway.util.AppJwtUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
